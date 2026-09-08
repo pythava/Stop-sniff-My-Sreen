@@ -1,16 +1,6 @@
 import pickle
 import cv2
-from plyer import notification
 from insightface.app import FaceAnalysis
-
-
-def notice(title, message, app_name, timeout):
-    notification.notify(
-        title=title,
-        message=message,
-        app_name=app_name,
-        timeout=timeout
-    )
 
 
 app = FaceAnalysis(name='buffalo_l', providers=['CPUExecutionProvider'])
