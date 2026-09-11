@@ -49,7 +49,7 @@ except FileNotFoundError as e:
     print(f"[Error] file open error : {e}")
     exit()
 
-app = FaceAnalysis(name='buffalo_l', providers=['CPUExecutionProvider'])
+app = FaceAnalysis(name='buffalo_l', providers=['CUDAExecutionProvider', 'CPUExecutionProvider']) # CPU만 사용하니깐 너무 많은 부하랑 끊임이 발생함
 app.prepare(ctx_id=0, det_size=(320, 320))
 
 flag = 0
@@ -62,7 +62,7 @@ FLAG_time = 30
 last_time = 0
 return_time = 10
 
-now = time
+now = datetime.now()
 
 
 while cap.isOpened():
