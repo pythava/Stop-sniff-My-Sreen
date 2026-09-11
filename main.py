@@ -5,6 +5,7 @@ from plyer import notification
 from insightface.app import FaceAnalysis
 import time
 from datetime import datetime
+from collections import deque
 
 def notice(title, message, app_name, timeout):
     notification.notify(
@@ -15,14 +16,31 @@ def notice(title, message, app_name, timeout):
     )
 
 # 이거 로그기능인데 언젠가 사용하기
-def logs(user, message, start_time, end_time):
-    with open(f'screen{now.date() + now.time()}.log', 'w', encoding='utf-8') as f:
+def logs(user, message, start_time):
+    with open(f'screen{now.date()}.log', 'a', encoding='utf-8') as log_file:
         text = f"[{user}]\t"
         text += message + "\t"
         text += str(start_time) 
         text += " ~ "
-        text += str(end_time) + "\n"
-        f.write(text)
+        log_file.write(text)
+
+# 로그에서 마지막으로 남은 로그 유저 가져오는 로직 
+def bring_auth():
+    try:
+        with open(f"screen{now.date()}.log", "r", encoding="utf-8") as log_file:
+            last_line = deque(log_file, maxlen=1)
+            line = last_line[0] if last_line else ""    
+
+        if line == "":
+            return ""
+        else:
+            auth = line[1:]
+            idx = auth.find("]")
+            auth = auth[:idx]
+            return auth
+    except FileNotFoundError as e:
+        print(f"[Error] file open error : {e}")
+        
     
 try:
     with open('owner.pkl', 'rb') as f:
@@ -44,7 +62,7 @@ FLAG_time = 30
 last_time = 0
 return_time = 10
 
-now = datetime.now()
+now = time
 
 
 while cap.isOpened():
@@ -65,6 +83,15 @@ while cap.isOpened():
         if similarity >= THRESHOLD:
                 
             text = f'Owner detected ({similarity:.2f})'
+            
+            # 여기서 마지막 로그로 남은 유저가 Owner라면 그대로 카운트 하고 아니면 현재 시각을 기록하고 Owner로 기록 시작하기
+            if bring_auth() != "Owner":
+                with open(f'screen{now.date()}.log', 'a', encoding='utf-8') as log_file:
+                    #log_file.write(str(time.time()))
+                    log_file.write("\n")
+                    logs("Owner", "Owner detectecd", time.time())
+                    print("not Owner1111111111111")
+                    
             color = (0, 255, 0)
             f.write
         else:
@@ -77,9 +104,19 @@ while cap.isOpened():
             else:
                 print(44)
                 last_time = int(time.time())
+            
+            if bring_auth() != "Stranger":
+                with open(f'screen{now.date()}.log', 'a', encoding='utf-8') as log_file:
+                    #log_file.write(str(time.time()))
+                    log_file.write("\n")
+                    logs("Stranger", "Stranger detectecd", time.time())
+                    print("not Stranger2222222222222222222222")        
+            
+            
             text = f'Stranger Detected ({similarity:.2f})'
             if flag == 0:
                 notice("Stranger Detected!!", "We detect Some Stranger on Your Cam", "Stop-sniff-My-Sreen", 5)
+                
 
             flag += 1
             if flag >= FLAG_time:
